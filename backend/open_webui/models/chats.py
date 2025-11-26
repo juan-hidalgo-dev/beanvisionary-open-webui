@@ -10,7 +10,7 @@ from open_webui.models.folders import Folders
 from open_webui.env import SRC_LOG_LEVELS
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import BigInteger, Boolean, Column, String, Text, JSON, Index
+from sqlalchemy import BigInteger, Boolean, Column, String, Text, JSON, Index, Float
 from sqlalchemy import or_, func, select, and_, text
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import bindparam
@@ -40,6 +40,11 @@ class Chat(Base):
 
     meta = Column(JSON, server_default="{}")
     folder_id = Column(Text, nullable=True)
+    
+    # Token tracking fields
+    tokens_sent = Column(Float, default=0.0)
+    tokens_received = Column(Float, default=0.0)
+    total_tokens = Column(Float, default=0.0)
 
     __table_args__ = (
         # Performance indexes for common queries
@@ -73,6 +78,11 @@ class ChatModel(BaseModel):
 
     meta: dict = {}
     folder_id: Optional[str] = None
+    
+    # Token tracking fields
+    tokens_sent: Optional[float] = 0.0
+    tokens_received: Optional[float] = 0.0
+    total_tokens: Optional[float] = 0.0
 
 
 ####################
@@ -113,6 +123,11 @@ class ChatResponse(BaseModel):
     pinned: Optional[bool] = False
     meta: dict = {}
     folder_id: Optional[str] = None
+    
+    # Token tracking fields
+    tokens_sent: Optional[float] = 0.0
+    tokens_received: Optional[float] = 0.0
+    total_tokens: Optional[float] = 0.0
 
 
 class ChatTitleIdResponse(BaseModel):
@@ -1071,6 +1086,59 @@ class ChatTable:
                 return True
         except Exception:
             return False
+
+    def update_chat_tokens(self, chat_id: str, tokens_sent: float = 0.0, tokens_received: float = 0.0) -> Optional[ChatModel]:
+        """Update token counts for a chat"""
+        try:
+            with get_db() as db:
+                chat = db.get(Chat, chat_id)
+                if chat:
+                    chat.tokens_sent += tokens_sent
+                    chat.tokens_received += tokens_received
+                    chat.total_tokens = chat.tokens_sent + chat.tokens_received
+                    chat.updated_at = int(time.time())
+                    
+                    db.commit()
+                    db.refresh(chat)
+                    return ChatModel.model_validate(chat)
+                return None
+        except Exception as e:
+            log.error(f"Error updating chat tokens: {e}")
+            return None
+
+    def get_chat_token_stats(self, chat_id: str) -> Optional[dict]:
+        """Get token statistics for a chat"""
+        try:
+            chat = self.get_chat_by_id(chat_id)
+            if chat:
+                return {
+                    "tokens_sent": chat.tokens_sent,
+                    "tokens_received": chat.tokens_received,
+                    "total_tokens": chat.total_tokens
+                }
+            return None
+        except Exception as e:
+            log.error(f"Error getting chat token stats: {e}")
+            return None
+
+    def reset_chat_tokens(self, chat_id: str) -> Optional[ChatModel]:
+        """Reset token counts for a chat"""
+        try:
+            with get_db() as db:
+                chat = db.get(Chat, chat_id)
+                if chat:
+                    chat.tokens_sent = 0.0
+                    chat.tokens_received = 0.0
+                    chat.total_tokens = 0.0
+                    chat.updated_at = int(time.time())
+                    
+                    db.commit()
+                    db.refresh(chat)
+                    return ChatModel.model_validate(chat)
+                return None
+        except Exception as e:
+            log.error(f"Error resetting chat tokens: {e}")
+            return None
 
 
 Chats = ChatTable()

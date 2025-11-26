@@ -2481,6 +2481,17 @@ async def process_chat_response(
                                                 },
                                             }
                                         )
+                                        
+                                        # Update token tracking for the chat
+                                        if metadata.get("chat_id") and not metadata["chat_id"].startswith("local:"):
+                                            tokens_sent = float(usage.get("prompt_tokens", 0))
+                                            tokens_received = float(usage.get("completion_tokens", 0))
+                                            if tokens_sent > 0 or tokens_received > 0:
+                                                Chats.update_chat_tokens(
+                                                    metadata["chat_id"], 
+                                                    tokens_sent, 
+                                                    tokens_received
+                                                )
 
                                     if not choices:
                                         error = data.get("error", {})
