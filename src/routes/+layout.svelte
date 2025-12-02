@@ -28,7 +28,8 @@
 		isApp,
 		appInfo,
 		toolServers,
-		playingNotificationSound
+		playingNotificationSound,
+		sidebarWidth
 	} from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -562,6 +563,9 @@
 			if (window.applyTheme) {
 				window.applyTheme();
 			}
+			
+			// Initialize sidebar width from localStorage
+			sidebarWidth.init();
 		}
 
 		if (window?.electronAPI) {

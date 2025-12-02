@@ -42,7 +42,8 @@
 		functions,
 		selectedFolder,
 		pinnedChats,
-		showEmbeds
+		showEmbeds,
+		sidebarWidth
 	} from '$lib/stores';
 
 	import {
@@ -2375,9 +2376,10 @@
 
 <div
 	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-260px)]'
+		? '  md:max-w-[calc(100%-{$sidebarWidth}px)]'
 		: ' '} w-full max-w-full flex flex-col"
 	id="chat-container"
+	style={$showSidebar && !$mobile ? `margin-left: ${$sidebarWidth}px` : ''}
 >
 	{#if !loading}
 		<div in:fade={{ duration: 50 }} class="w-full h-full flex flex-col">
