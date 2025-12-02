@@ -25,7 +25,8 @@
 		isApp,
 		models,
 		selectedFolder,
-		WEBUI_NAME
+		WEBUI_NAME,
+		sidebarWidth
 	} from '$lib/stores';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
@@ -467,6 +468,44 @@
 	};
 
 	const isWindows = /Windows/i.test(navigator.userAgent);
+
+	// Resize functionality
+	let isResizing = false;
+	let startX = 0;
+	let startWidth = 0;
+
+	const handleResizeStart = (e: MouseEvent) => {
+		isResizing = true;
+		startX = e.clientX;
+		startWidth = $sidebarWidth;
+		
+		document.addEventListener('mousemove', handleResize);
+		document.addEventListener('mouseup', handleResizeEnd);
+		
+		// Prevent text selection during resize
+		document.body.style.userSelect = 'none';
+		document.body.style.cursor = 'col-resize';
+	};
+
+	const handleResize = (e: MouseEvent) => {
+		if (!isResizing) return;
+		
+		const deltaX = e.clientX - startX;
+		const newWidth = Math.max(260, Math.min(600, startWidth + deltaX));
+		
+		sidebarWidth.set(newWidth);
+	};
+
+	const handleResizeEnd = () => {
+		isResizing = false;
+		
+		document.removeEventListener('mousemove', handleResize);
+		document.removeEventListener('mouseup', handleResizeEnd);
+		
+		// Restore normal cursor and text selection
+		document.body.style.userSelect = '';
+		document.body.style.cursor = '';
+	};
 </script>
 
 <ArchivedChatsModal
@@ -711,6 +750,17 @@
 			</div>
 		</div>
 	</div>
+	
+	<!-- Resize handle -->
+	{#if $showSidebar && !$mobile}
+		<div
+			class="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500/20 transition-colors"
+			on:mousedown={handleResizeStart}
+			title="Resize sidebar"
+		>
+			<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-400 rounded-full opacity-0 hover:opacity-100 transition-opacity"></div>
+		</div>
+	{/if}
 {/if}
 
 {#if $showSidebar}
@@ -726,11 +776,12 @@
 		transition:slide={{ duration: 250, axis: 'x' }}
 		data-state={$showSidebar}
 	>
-		<div
-			class=" my-auto flex flex-col justify-between h-screen max-h-[100dvh] w-[260px] overflow-x-hidden scrollbar-hidden z-50 {$showSidebar
-				? ''
-				: 'invisible'}"
-		>
+	<div
+		class=" my-auto flex flex-col justify-between h-screen max-h-[100dvh] overflow-x-hidden scrollbar-hidden z-50 {$showSidebar
+			? ''
+			: 'invisible'}"
+		style="width: {$sidebarWidth}px"
+	>
 			<div
 				class="sidebar px-2 pt-2 pb-1.5 flex justify-between space-x-1 text-gray-600 dark:text-gray-400 sticky top-0 z-10 -mb-3"
 			>
@@ -1252,5 +1303,16 @@
 				</div>
 			</div>
 		</div>
+		
+		<!-- Resize handle for main sidebar -->
+		{#if !$mobile}
+			<div
+				class="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500/20 transition-colors"
+				on:mousedown={handleResizeStart}
+				title="Resize sidebar"
+			>
+				<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-400 rounded-full opacity-0 hover:opacity-100 transition-opacity"></div>
+			</div>
+		{/if}
 	</div>
 {/if}

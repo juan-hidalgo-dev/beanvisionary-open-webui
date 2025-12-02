@@ -80,6 +80,41 @@ export const showShortcuts = writable(false);
 export const showArchivedChats = writable(false);
 export const showChangelog = writable(false);
 
+// Sidebar width management with localStorage persistence
+const DEFAULT_SIDEBAR_WIDTH = 260;
+const MIN_SIDEBAR_WIDTH = 200;
+const MAX_SIDEBAR_WIDTH = 400;
+
+function createSidebarWidth() {
+	const { subscribe, set, update } = writable(DEFAULT_SIDEBAR_WIDTH);
+	
+	return {
+		subscribe,
+		set: (width: number) => {
+			const constrainedWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, width));
+			localStorage.setItem('sidebarWidth', constrainedWidth.toString());
+			set(constrainedWidth);
+		},
+		reset: () => {
+			localStorage.setItem('sidebarWidth', DEFAULT_SIDEBAR_WIDTH.toString());
+			set(DEFAULT_SIDEBAR_WIDTH);
+		},
+		init: () => {
+			const stored = localStorage.getItem('sidebarWidth');
+			if (stored) {
+				const width = parseInt(stored, 10);
+				if (!isNaN(width) && width >= MIN_SIDEBAR_WIDTH && width <= MAX_SIDEBAR_WIDTH) {
+					set(width);
+					return;
+				}
+			}
+			set(DEFAULT_SIDEBAR_WIDTH);
+		}
+	};
+}
+
+export const sidebarWidth = createSidebarWidth();
+
 export const showControls = writable(false);
 export const showEmbeds = writable(false);
 export const showOverview = writable(false);

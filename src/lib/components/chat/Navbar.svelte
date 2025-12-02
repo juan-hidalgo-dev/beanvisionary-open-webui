@@ -13,7 +13,8 @@
 		showControls,
 		showSidebar,
 		temporaryChatEnabled,
-		user
+		user,
+		sidebarWidth
 	} from '$lib/stores';
 
 	import { slide } from 'svelte/transition';
@@ -73,7 +74,7 @@
 />
 
 <nav
-	class="sticky top-0 z-30 w-full {chat?.id
+	class="relative z-30 w-full {chat?.id
 		? 'pt-0.5 pb-1'
 		: 'pt-1 pb-1'} -mb-12 flex flex-col items-center drag-region"
 >
