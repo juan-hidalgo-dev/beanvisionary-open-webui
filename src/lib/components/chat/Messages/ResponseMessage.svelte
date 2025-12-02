@@ -1197,6 +1197,35 @@
 											</svg>
 										</button>
 									</Tooltip>
+
+									<!-- Token Display -->
+									<Tooltip content={`Tokens: ${message.usage.total_tokens ?? 0} (Prompt: ${message.usage.prompt_tokens ?? 0}, Completion: ${message.usage.completion_tokens ?? 0})`} placement="bottom">
+										<button
+											aria-label="Token usage"
+											class="{isLastMessage || ($settings?.highContrastMode ?? false)
+												? 'visible'
+												: 'invisible group-hover:visible'} p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg dark:hover:text-white hover:text-black transition flex items-center gap-1"
+											on:click={() => {
+												console.log('Token usage:', message.usage);
+											}}
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke-width="2"
+												stroke="currentColor"
+												class="w-4 h-4"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+												/>
+											</svg>
+											<span class="text-xs font-medium">{message.usage.total_tokens ?? 0}</span>
+										</button>
+									</Tooltip>
 								{/if}
 
 								{#if !readOnly}
