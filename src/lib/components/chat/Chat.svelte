@@ -2379,7 +2379,7 @@
 		? '  md:max-w-[calc(100%-{$sidebarWidth}px)]'
 		: ' '} w-full max-w-full flex flex-col"
 	id="chat-container"
-	style={$showSidebar && !$mobile ? `margin-left: {$sidebarWidth}px` : ''}
+	style={$showSidebar && !$mobile ? `margin-left: ${$sidebarWidth}px` : ''}
 >
 	{#if !loading}
 		<div in:fade={{ duration: 50 }} class="w-full h-full flex flex-col">
@@ -2405,7 +2405,7 @@
 			{/if}
 
 			<PaneGroup direction="horizontal" class="w-full h-full">
-				<Pane defaultSize={50} minSize={30} class="h-full flex relative max-w-full flex-col" style={$showSidebar && !$mobile ? `margin-left: {$sidebarWidth}px` : ''}>
+				<Pane defaultSize={50} minSize={30} class="h-full flex relative max-w-full flex-col">
 					<Navbar
 						bind:this={navbarElement}
 						chat={{
